@@ -1,6 +1,13 @@
 //variaveis do jogo
-var canvas , ctx, ALTURA, LARGURA, frames = 0, maxPulos = 3, velocidade = 6,
-estadoAtual,
+var canvas;
+var ctx;
+var ALTURA;
+var LARGURA;
+var frames = 0;
+var maxPulos = 3;
+var velocidade = 6;
+var estadoAtual;
+var record;
 
 estados = {
   jogar: 0,
@@ -47,6 +54,10 @@ bloco = {
   reset: function() {
     this.velocidade = 0;
     this.y = 0;
+    if (this.score > record) {
+         localStorage.setItem("record", this.score);
+         record = this.score;
+    }
     this.score = 0;
   },
   desenha: function() {
@@ -149,6 +160,10 @@ function main() {
   document.addEventListener("mousedown",clique);
   document.addEventListener("keypress",tecla);
   estadoAtual = estados.jogar;
+  record = localStorage.getItem("record");
+  if (record == null) {
+       record = 0;
+  }
   roda();
 }
 
@@ -172,9 +187,19 @@ function desenha() {
   ctx.fillRect(0, 0, LARGURA, ALTURA);
 
   // categorias:score
-  ctx.fillStyle = "#000000";
   ctx.font = "50px Arial";
+  ctx.fillStyle = "yellow";
+  ctx.fillRect(460, 10, 150, 100);
+
+  ctx.fillStyle = "#000000";
   ctx.fillText(bloco.score, 30, 68);
+  ctx.fillText(record, 500, 68);
+
+  ctx.font = "15px Tahoma";
+  ctx.fillText("jumps", 25, 90);
+  ctx.fillText("record", 495, 90);
+
+  ctx.font = "50px Arial";
 
   // quadrado para iniciar
   if (estadoAtual == estados.jogar) {
@@ -189,7 +214,12 @@ function desenha() {
     ctx.save();
     ctx.translate(LARGURA / 2, ALTURA / 2);
     ctx.fillStyle = "#fff";
+
+    if (bloco.score > record) {
+      ctx.fillText("New Record!!", -150, -65);
+    }
   }
+
 
   if (bloco.score < 10 && estadoAtual == estados.perdeu) {
     ctx.fillText(bloco.score,-13, 19);
