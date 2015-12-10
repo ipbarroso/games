@@ -3,9 +3,9 @@ var canvas , ctx, ALTURA, LARGURA, frames = 0, maxPulos = 3, velocidade = 6,
 estadoAtual,
 
 estados = {
-    jogar: 0,
-    jogando: 1,
-    perdeu: 2
+  jogar: 0,
+  jogando: 1,
+  perdeu: 2
 },
 
 chao = {
@@ -13,8 +13,8 @@ chao = {
   altura:50,
   cor: "#228B22",
   desenha: function() {
-      ctx.fillStyle = this.cor;
-      ctx.fillRect (0, this.y, LARGURA, this.altura);
+    ctx.fillStyle = this.cor;
+    ctx.fillRect (0, this.y, LARGURA, this.altura);
   }
 };
 
@@ -27,15 +27,15 @@ bloco = {
   gravidade: 1.5,
   velocidade: 0,
   forcaDoPulo: 20,
-  qntPulos: 3,
+  qntPulos: 0,
+  score: 0,
   atualiza: function() {
     this.velocidade += this.gravidade;
     this.y += this.velocidade;
-    if (this.y > chao.y - this.altura && estadoAtual
-      != estados.perdeu) {
+
+    if (this.y > chao.y - this.altura) {
       this.y = chao.y - this.altura;
       this.qntPulos = 0;
-      this.velocidade = 0;
     }
   },
   pula: function() {
@@ -45,14 +45,16 @@ bloco = {
     }
   },
   reset: function() {
-    bloco.velocidade = 0;
-    bloco.y = 0;
+    this.velocidade = 0;
+    this.y = 0;
+    this.score = 0;
   },
   desenha: function() {
     ctx.fillStyle = this.cor;
     ctx.fillRect(this.x, this.y, this.largura, this.altura);
   }
-},
+};
+
 obstaculos = {
   _obs: [],
   cores: ["#7FFF00", 	"#D2691E", 	"#FF7F50", 	"#6495ED", 	"#FFF8DC"],
@@ -60,23 +62,29 @@ obstaculos = {
   insere: function() {
     this._obs.push({
       x: LARGURA,
-      largura: 30 + Math.floor(21 * Math.random()),
-      //largura: 50,
+      // largura: 30 + Math.floor(21 * Math.random()),
+      largura: 50,
       altura: 30 + Math.floor(120 * Math.random()),
       cor: this.cores[Math.floor(5 * Math.random())]
     });
-      this.tempoInsere = 55;
+    this.tempoInsere = 40 + Math.floor(21 * Math.random());
   },
-  atualiza: function(){
-    if (this.tempoInsere == 0)
-        this.insere();
-        this.tempoInsere--;
+  atualiza: function() {
+    if (this.tempoInsere == 0) {
+      this.insere();
+    }
+    else {
+      this.tempoInsere--;
+    }
     for (var i = 0, tam = this._obs.length; i < tam; i++) {
       var obs =this._obs[i];
       obs.x -= velocidade;
-      if (bloco.x < obs.x+ obs.largura && bloco.x + bloco.largura >=
-           obs.x && bloco.y + bloco.altura >= chao.y - obs.altura) {
-          estadoAtual = estados.perdeu;
+      if (bloco.x < obs.x + obs.largura && bloco.x + bloco.largura >=
+        obs.x && bloco.y + bloco.altura >= chao.y - obs.altura) {
+        estadoAtual = estados.perdeu;
+      }
+      else if (obs.x == 0) {
+        bloco.score++;
       }
       else if (obs.x <= -obs.largura) {
         this._obs.splice(i, 1);
@@ -85,7 +93,7 @@ obstaculos = {
       }
     }
   },
-  limpa: function(){
+  limpa: function() {
     this._obs = [];
   },
   desenha: function(){
@@ -99,30 +107,26 @@ obstaculos = {
 
 function clique(event) {
   if (estadoAtual == estados.jogando) {
-      bloco.pula();
+    bloco.pula();
   }
   else  if (estadoAtual == estados.jogar) {
     estadoAtual = estados.jogando;
   }
-  else  if (estadoAtual == estados.jogar) {
-    estadoAtual = estados.jogando;
+  else  if (estadoAtual == estados.perdeu /* && bloco.y == 2 * ALTURA */) {
+    estadoAtual = estados.jogar;
+    obstaculos.limpa();
+    bloco.reset();
   }
-  // else if (estadoAtual == estados.perdeu && bloco.y >= 2 * ALTURA) {
-  //   estadoAtual = estados.jogar;
-  //   obstaculos.limpa();
-  //   bloco.velocidade = 0;
-  //   bloco.y = 0;
-  // }
+
 }
 
 function tecla(event) {
-   // alert(event.keyCode);
+  // alert(event.keyCode);
   if (event.keyCode === 32){
-      bloco.pula();
+    bloco.pula();
   }
-  // 105 is letter "i"
   else if (event.keyCode === 105) {
-      obstaculos.insere();
+    obstaculos.insere();
   };
 }
 
@@ -156,28 +160,54 @@ function roda() {
 
 function atualiza() {
   frames++;
+  bloco.atualiza();
   if (estadoAtual == estados.jogando) {
-    bloco.atualiza();
+    obstaculos.atualiza();
   }
 }
 
 function desenha() {
+  // fundo
   ctx.fillStyle = "#50beff";
   ctx.fillRect(0, 0, LARGURA, ALTURA);
-  if (estadoAtual== estados.jogar) {
+
+  // categorias:score
+  ctx.fillStyle = "#000000";
+  ctx.font = "50px Arial";
+  ctx.fillText(bloco.score, 30, 68);
+
+  // quadrado para iniciar
+  if (estadoAtual == estados.jogar) {
     ctx.fillStyle = "green";
-    ctx.fillRect(LARGURA/ 2 - 50, ALTURA/ 2 - 50, 100, 100);
+    ctx.fillRect(LARGURA / 2 - 50, ALTURA / 2 - 50, 100, 100);
   }
-  else if (estadoAtual == estados.perdeu) {ctx.fillStyle = "red";
+  // quadrado para reiniciar
+  else if (estadoAtual == estados.perdeu) {
+    ctx.fillStyle = "red";
     ctx.fillRect(LARGURA/ 2 - 50, ALTURA/ 2 - 50, 100, 100);
+
+    ctx.save();
+    ctx.translate(LARGURA / 2, ALTURA / 2);
+    ctx.fillStyle = "#fff";
   }
-  else if (estadoAtual == estados.jogando) {
+
+  if (bloco.score < 10 && estadoAtual == estados.perdeu) {
+    ctx.fillText(bloco.score,-13, 19);
+  }
+  else if (bloco.score >= 10 && bloco.score < 100 && estadoAtual == estados.perdeu) {
+    ctx.fillText(bloco.score, -26, 19);
+  }
+  else if (estadoAtual == estados.perdeu) {
+    ctx.fillText(bloco.score, -39, 19);
+  }
+  ctx.restore();
+
+  if (estadoAtual == estados.jogando) {
     obstaculos.desenha();
+    chao.desenha();
+    bloco.desenha();
   }
-  chao.desenha();
-  obstaculos.desenha();
-  bloco.desenha();
-}
+};
 
 //inicializa o jogo
 main();
