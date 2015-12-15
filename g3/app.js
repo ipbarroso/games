@@ -1,4 +1,4 @@
-//variaveis do jogo
+// variaveis do jogo
 var canvas;
 var ctx;
 var ALTURA;
@@ -78,7 +78,7 @@ obstaculos = {
       altura: 30 + Math.floor(120 * Math.random()),
       cor: this.cores[Math.floor(5 * Math.random())]
     });
-    this.tempoInsere = 40 + Math.floor(21 * Math.random());
+    this.tempoInsere = 35 + Math.floor(21 * Math.random());
   },
   atualiza: function() {
     if (this.tempoInsere == 0) {
@@ -123,7 +123,7 @@ function clique(event) {
   else  if (estadoAtual == estados.jogar) {
     estadoAtual = estados.jogando;
   }
-  else  if (estadoAtual == estados.perdeu /* && bloco.y == 2 * ALTURA */) {
+  else  if (estadoAtual == estados.perdeu /* && bloco.y == 2 * ALTURA*/ ) {
     estadoAtual = estados.jogar;
     obstaculos.limpa();
     bloco.reset();
@@ -171,6 +171,8 @@ function roda() {
   atualiza();
   desenha();
   window.requestAnimationFrame(roda);
+  chao.desenha();
+  bloco.desenha();
 }
 
 function atualiza() {
@@ -230,7 +232,7 @@ function desenha() {
   else if (estadoAtual == estados.perdeu) {
     ctx.fillText(bloco.score, -39, 19);
   }
-  ctx.restore();
+ctx.restore();
 
   if (estadoAtual == estados.jogando) {
     obstaculos.desenha();

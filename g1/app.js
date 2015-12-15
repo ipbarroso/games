@@ -1,6 +1,6 @@
 //variaveis do jogo
 var canvas , ctx, ALTURA, LARGURA, frames = 0, maxPulos = 3, velocidade = 6,
-estadoAtual,
+estadoAtual;
 
 estados = {
     jogar: 0,
